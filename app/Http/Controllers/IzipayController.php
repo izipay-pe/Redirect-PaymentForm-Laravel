@@ -5,34 +5,49 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 
-use Lyra\Client;
-use Lyra\Exceptions\LyraException;
-
 class IzipayController extends Controller
 {
 
-    public function initPaymentForm()
-    {
-        $order = uniqid('order-');
-        return view('izipay.index', compact('order'));
+    public function index(){
+        return view('izipay.index');
     }
 
-    public function confirm(Request $request)
-    {
+    public function checkout(Request $request){
+        // Obtener la configuración incial del formulario
         $paymentConfig = $this->initForm();
 
-        $paymentConfig["vads_cust_first_name"] = $request->input("firstname");
-        $paymentConfig["vads_cust_last_name"] = $request->input("lastname");
+        $paymentConfig["vads_cust_first_name"] = $request->input("firstName");
+        $paymentConfig["vads_cust_last_name"] = $request->input("lastName");
         $paymentConfig["vads_cust_email"] = $request->input("email");
-        $paymentConfig["vads_order_id"] = $request->input("order");
-        $paymentConfig["vads_amount"] = intval($request->input("amount")) * 100;
-        $paymentConfig["vads_url_return"] = url('/status?order=' . $request->input("order"));
-        $paymentConfig["vads_return_mode"] = "GET";
+        $paymentConfig["vads_cust_phone"] = $request->input("phoneNumber");
+        $paymentConfig["vads_cust_national_id"] = $request->input("identityCode");
+        $paymentConfig["vads_cust_address"] = $request->input("address");
+        $paymentConfig["vads_cust_country"] = $request->input("country");
+        $paymentConfig["vads_cust_state"] = $request->input("state");
+        $paymentConfig["vads_cust_city"] = $request->input("city");
+        $paymentConfig["vads_cust_zip"] = $request->input("zipCode");
+        $paymentConfig["vads_order_id"] = $request->input("orderId");
+        $paymentConfig["vads_amount"] = $request->input("amount") * 100;
+        $paymentConfig["vads_currency"] = $request->input("currency") == "PEN" ? 604:840;
+        $paymentConfig["vads_url_return"] = url('/result');
+        $paymentConfig["vads_return_mode"] = "POST";
+
+        // Generar el signature
         $paymentConfig["signature"] = $this->getSignature($paymentConfig, env('CLAVE'));
 
-        return view('izipay.confirm', ['data' => $paymentConfig, 'URL' => env('URL_PAYMENT')]);
+        return view('izipay.checkout', ['data' => $paymentConfig]);
+    }
+    public function result(Request $request){
+        // obtener el resultado de pago
+        $data = $request->input();
+
+        // comparar si la firma es válida
+        if( $this->getSignature($data, env('CLAVE'))  !== $data["signature"]) return new Exception("Invalid signature");
+        
+        return view('izipay.result', compact("data"));
     }
 
+    // Configuración de pago
     private function initForm()
     {
         date_default_timezone_set("UTC");
@@ -41,12 +56,26 @@ class IzipayController extends Controller
             "vads_amount" => 0,
             "vads_ctx_mode" => env('MODE'),
             "vads_currency" => 604,
+            "vads_cust_address" => "", 
+            "vads_cust_city" => "",
+            "vads_cust_country" => "",
+            "vads_cust_email" => "",
+            "vads_cust_first_name" => "",
+            "vads_cust_last_name" => "",
+            "vads_cust_national_id" => "",
+            "vads_cust_phone" => "",
+            "vads_cust_state" => "",
+            "vads_cust_zip" => "",
+            "vads_order_id" => "",
             "vads_page_action" => "PAYMENT",
             "vads_payment_config" => "SINGLE",
+            "vads_return_mode" => "POST",
             "vads_site_id" => env('SHOP_ID'),
             "vads_trans_date" => date("YmdHis"),
             "vads_trans_id" => substr(md5(time()), -6),
+            "vads_url_return" => url("result"),
             "vads_version" => "V2",
+            "signature" => "",
         );
     }
 
@@ -68,16 +97,6 @@ class IzipayController extends Controller
         $signature = base64_encode(hash_hmac('sha256', utf8_encode($content_signature), $key, true));
         return $signature;
     }
-
-    public function status(Request $request)
-    {
-        $args = $request->query();
-        $amount = intval($args['vads_amount']) / 100;
-
-        return view('izipay.status', ['data' => $args, 'amount' => $amount]);
-    }
-
-
 
     public function notificationIpn(Request $request)
     {

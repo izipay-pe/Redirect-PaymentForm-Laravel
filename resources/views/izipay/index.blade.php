@@ -1,87 +1,150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
+    <title>Izipay - Formulario Incrustado</title>
+    <link rel='stylesheet' href="css/style.css" />
     <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Inicio</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #ff2d46;
-        }
-    </style>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/journal/bootstrap.min.css"
+        integrity="sha384-QDSPDoVOoSWz2ypaRUidLmLYl4RyoBWI44iA5agn6jHegBxZkNqgm2eHb6yZ5bYs" crossorigin="anonymous" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-    <style>
-        .btn-izi {
-            background-color: #00a09d;
-        }
-
-        .btn-izi:hover {
-            background-color: #08b9b6;
-        }
-
-        .nav-bar {
-            position: absolute;
-            top: 10%;
-        }
-    </style>
-
-    <nav class="nav-bar">
-        <a href="/">
-            <img src="https://iziweb001b.s3.amazonaws.com/webresources/img/logo.png" width="150"
-                alt="" /></a>
+    <nav class="navbar bg-primary" style="background-color: #FF2D46!important;">
+        <div class="container-fluid">
+            <a href="/" class="navbar-brand mb-1"><img src="https://iziweb001b.s3.amazonaws.com/webresources/img/logo.png" width="80"></a>
+        </div>
     </nav>
-
-    <div class="card p-4">
-        <h4 class="mb-1">Formulario en redirección</h4>
-        <hr class="w-100 mb-4">
-        <form action="{{url('/confirm')}}" method="POST">
+    <section class="container">
+        <form class="col-md-12" action="{{route('checkout')}}" method="POST">
             @csrf
-            <div class="mb-3">
-                <label for="email" class="form-label ">Email:</label>
-                <input type="Email" class="form-control" id="email" name="email" required />
-            </div>
-            <div class="mb-3">
-                <label for="firstname" class="form-label ">Nombres:</label>
-                <input type="text" class="form-control" id="firstname" name="firstname" required />
-            </div>
-            <div class="mb-3">
-                <label for="firstname" class="form-label ">Apellidos:</label>
-                <input type="text" class="form-control" id="lastname" name="lastname" required />
-            </div>
-            <div class="mb-3">
-                <label for="order" class="form-label ">N° Orden (Pedido):</label>
-                <input type="text" class="form-control" id="order" value="{{ $order }}" name="order"
-                    required />
-            </div>
-            <div class="mb-3">
-                <label for="amount" class="form-label ">Monto:</label>
-                <input type="number" class="form-control" id="amount" name="amount" required />
-            </div>
+            <div class="row">
+                <div class="left-column col-md-6">
+                    <section class="customer-details">
+                        <h2>Datos del cliente</h2>
+                        <div class="form-row">
+                            <!-- Nombre -->
+                            <div class="form-group col-md-6">
+                                <label for="firstName">Nombre</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" placeholder="Nombre" required>
+                            </div>
+                            <!-- Apellido -->
+                            <div class="form-group col-md-6">
+                                <label for="lastName">Apellido</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Apellido" required>
+                            </div>
+                        </div>
 
-            <input class="btn btn-izi w-50 mx-auto text-white mt-2" type="submit" value="Pagar" />
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label for="email">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                        </div>
 
+                        <!-- Teléfono -->
+                        <div class="form-group">
+                            <label for="phoneNumber">Teléfono</label>
+                            <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="999999999" required>
+                        </div>
+
+                        <div class="form-row">
+                            <!-- Tipo de Documento -->
+                            <div class="form-group col-md-4">
+                                <label for="identityType">Tipo de Documento</label>
+                                <select class="form-control" id="identityType" name="identityType">
+                                    <option value="DNI">DNI</option>
+                                    <option value="PS">Pasaporte</option>
+                                    <option value="CE">Carné de Extranjería</option>
+                                </select>
+                            </div>
+
+                            <!-- Documento -->
+                            <div class="form-group col-md-8">
+                                <label for="identityCode">Documento</label>
+                                <input type="text" class="form-control" id="identityCode" name="identityCode" placeholder="Doc. Identidad" required>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="billing-details">
+                        <h2>Datos de envío</h2>
+                        <!-- Dirección -->
+                        <div class="form-group">
+                            <label for="address">Dirección</label>
+                            <input type="text" class="form-control" id="address" name="address" placeholder="Nombre de la calle y número de casa" required>
+                        </div>
+
+                        <div class="form-row">
+                            <!-- País -->
+                            <div class="form-group col-md-6">
+                                <label for="country">País</label>
+                                <select class="form-control" id="country" name="country">
+                                    <option value="PE">Perú</option>
+                                    <option value="AR">Argentina</option>
+                                    <option value="CL">Chile</option>
+                                    <option value="CO">Colombia</option>
+                                    <!-- El valor a enviar es el código de pais en formato ISO 3166-1 alfa-2 -->
+                                    <!-- Agrega más países si es necesario -->
+
+                                </select>
+                            </div>
+
+                            <!-- Estado -->
+                            <div class="form-group col-md-6">
+                                <label for="state">Departamento</label>
+                                <input type="text" class="form-control" id="state" name="state" placeholder="Departamento" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <!-- Ciudad -->
+                            <div class="form-group col-md-6">
+                                <label for="city">Distrito</label>
+                                <input type="text" class="form-control" id="city" name="city" placeholder="Distrito" required>
+                            </div>
+
+                            <!-- Código Postal -->
+                            <div class="form-group col-md-6">
+                                <label for="zipCode">Código Postal</label>
+                                <input type="text" class="form-control" id="zipCode" name="zipCode" placeholder="15021" required>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="right-column col-md-6">
+                    <section class="customer-details">
+                        <h2>Datos del pago</h2>
+                        <!-- Order ID -->
+                        <div class="form-group">
+                            <label for="orderId">Order-id</label>
+                            <input type="text" class="form-control" id="orderId" name="orderId" placeholder="Order" required>
+                        </div>
+
+                        <!-- Monto -->
+                        <div class="form-group">
+                            <label for="amount">Monto</label>
+                            <input type="number" class="form-control" id="amount" name="amount" placeholder="0.00" step="0.01" min="0" required>
+                        </div>
+
+                        <!--Moneda-->
+                        <div class="form-group">
+                            <label for="currency">Moneda</label>
+                            <select class="form-control" id="currency" name="currency">
+                                <option value="PEN">Soles</option>
+                                <option value="USD">Dólares</option>
+                            </select>
+                        </div>
+                    </section>
+                    <button class="btn btn-primary" type="submit">Pagar</button>
+                </div>
+            </div>
         </form>
-
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
-        integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous">
-    </script>
+    </section>
 </body>
 
 </html>
